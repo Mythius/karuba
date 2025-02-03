@@ -128,6 +128,17 @@
         }
       });
 
+      let ox,oy;
+      canvas.on('mousedown',e=>{
+        ox = e.pageX;
+        oy = e.pageY;
+      })
+      canvas.on('mouseup',e=>{
+        if(ox == e.pageX || oy == e.pageY){
+          current_game.click();
+        }
+      })
+
       current_game.nextTile(random(1,36));
 
     </script>

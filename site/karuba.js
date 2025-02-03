@@ -81,7 +81,7 @@ class Game {
       this.activeTile.draw();
       if (!mouse.down) {
         if (this.activeTile.tile?.piece)
-          this.activeTile.tile?.draw("yellow", "rgba(253, 4, 4, 0.38)");
+          this.activeTile.tile?.draw("red", "rgba(253, 4, 4, 0.38)");
         if (!this.activeTile.tile?.piece)
           this.activeTile.tile?.draw("yellow", "rgba(237, 253, 4, 0.38)");
       }
@@ -154,6 +154,9 @@ class Game {
     ) {
       this.placedTiles.push(this.activeTile);
       this.activeTile.tile.piece = this.activeTile;
+      let ct = this.activeTile.tile.getCenter();
+      this.activeTile.position = new Vector(ct.x,ct.y);
+      this.activeTile.sliding = false;
       this.activeTile = undefined;
       this.nextTile(random(1, 36));
     }
