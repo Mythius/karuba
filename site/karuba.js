@@ -17,6 +17,7 @@ class Game {
     this.g = new Grid(6, 5, 123);
     this.g.offsetX = 210;
     this.g.offsetY = 123;
+    this.playergrid = new Grid(1, 5, 123);
     this.activeTile;
     this.placedTiles = [];
     this.tileAssets = [];
@@ -57,6 +58,7 @@ class Game {
       tile.draw();
     }
     this.g.draw();
+    this.playergrid.draw("blue");
     if (this.activeTile && !this.activeTile.ix && !this.activeTile.onmouse) {
       this.activeTile.position = new Vector(
         this.BOARD_WIDTH + 100,
@@ -69,7 +71,8 @@ class Game {
     if (mouse.down && this.activeTile?.onmouse) {
       this.activeTile.slideTo(mouse.pos.x, mouse.pos.y, 4);
       let at = this.g.getActiveTile();
-      if(at) this.activeTile.tile = at;
+      if (!at) at = this.playergrid.getActiveTile();
+      if (at) this.activeTile.tile = at;
     }
     if (this.activeTile?.onmouse && !mouse.down) {
       if (this.activeTile.tile) {
@@ -123,6 +126,8 @@ class Game {
     this.g.scale = (this.BOARD_HEIGHT * 0.841313269493844) / 5;
     this.g.offsetX = this.BOARD_WIDTH / 4.743500423333334;
     this.g.offsetY = this.BOARD_HEIGHT / 16.244444444444444;
+    this.playergrid.scale = (this.BOARD_HEIGHT * 1.08) / 5;
+    this.playergrid.offsetY = this.BOARD_HEIGHT * 0;
   }
   saveBoard() {}
   loadBoard() {}
@@ -147,18 +152,32 @@ class Game {
   }
   tryPlayPiece() {
     let at = this.g.getActiveTile();
+    if (!at) at = this.playergrid.getActiveTile();
     if (
       this.activeTile.tile &&
       this.activeTile.tile == at &&
       !this.activeTile.tile.piece
     ) {
+      let remove = this.activeTile.tile.grid == this.playergrid;
       this.placedTiles.push(this.activeTile);
-      this.activeTile.tile.piece = this.activeTile;
-      let ct = this.activeTile.tile.getCenter();
-      this.activeTile.position = new Vector(ct.x,ct.y);
-      this.activeTile.sliding = false;
-      this.activeTile = undefined;
-      this.nextTile(random(1, 36));
+      if (!remove) this.activeTile.tile.piece = this.activeTile;
+      let pos = this.activeTile.pos;
+      if (remove) {
+        this.activeTile.sliding = false;
+        this.activeTile.slideTo(pos.x - 200, pos.y, 8).then((e) => {
+          this.placedTiles.pop();
+          this.nextTile(random(1, 36));
+        });
+        this.activeTile = undefined;
+      }
+      if(!remove){
+        let ct = this.activeTile.tile.getCenter();
+        this.activeTile.position = new Vector(ct.x, ct.y);
+        this.activeTile.sliding = false;
+        this.activeTile = undefined;
+        this.nextTile(random(1, 36));
+      }
+      // this.nextTile(random(1, 36));
     }
   }
 }
@@ -178,8 +197,8 @@ Tile.prototype.draw = function (
   ctx.stroke();
 };
 
-Grid.prototype.draw = function () {
+Grid.prototype.draw = function (color = "green") {
   this.forEach((tile) => {
-    tile.draw();
+    tile.draw(color);
   });
 };
