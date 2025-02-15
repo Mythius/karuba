@@ -17,10 +17,13 @@ class Game {
     this.g = new Grid(6, 5, 123);
     this.g.offsetX = 210;
     this.g.offsetY = 123;
+    this.playergrid = new Grid(1, 5, 123);
     this.activeTile;
     this.placedTiles = [];
     this.tileAssets = [];
     this.loadTrophies(this.trophies);
+    this.players_and_temples = [];
+    this.load_pat_assets();
     this.loadTiles();
   }
   updateHTML() {
@@ -57,6 +60,7 @@ class Game {
       tile.draw();
     }
     this.g.draw();
+    this.playergrid.draw("blue");
     if (this.activeTile && !this.activeTile.ix && !this.activeTile.onmouse) {
       this.activeTile.position = new Vector(
         this.BOARD_WIDTH + 100,
@@ -69,7 +73,8 @@ class Game {
     if (mouse.down && this.activeTile?.onmouse) {
       this.activeTile.slideTo(mouse.pos.x, mouse.pos.y, 4);
       let at = this.g.getActiveTile();
-      if(at) this.activeTile.tile = at;
+      if (!at) at = this.playergrid.getActiveTile();
+      if (at) this.activeTile.tile = at;
     }
     if (this.activeTile?.onmouse && !mouse.down) {
       if (this.activeTile.tile) {
@@ -85,6 +90,9 @@ class Game {
         if (!this.activeTile.tile?.piece)
           this.activeTile.tile?.draw("yellow", "rgba(237, 253, 4, 0.38)");
       }
+    }
+    for(let p of this.players_and_temples){
+      p.draw();
     }
   }
   loadTrophies(trophies) {
@@ -123,6 +131,8 @@ class Game {
     this.g.scale = (this.BOARD_HEIGHT * 0.841313269493844) / 5;
     this.g.offsetX = this.BOARD_WIDTH / 4.743500423333334;
     this.g.offsetY = this.BOARD_HEIGHT / 16.244444444444444;
+    this.playergrid.scale = (this.BOARD_HEIGHT * 1.08) / 5;
+    this.playergrid.offsetY = this.BOARD_HEIGHT * 0;
   }
   saveBoard() {}
   loadBoard() {}
@@ -147,20 +157,49 @@ class Game {
   }
   tryPlayPiece() {
     let at = this.g.getActiveTile();
+    if (!at) at = this.playergrid.getActiveTile();
     if (
       this.activeTile.tile &&
       this.activeTile.tile == at &&
       !this.activeTile.tile.piece
     ) {
+      let remove = this.activeTile.tile.grid == this.playergrid;
       this.placedTiles.push(this.activeTile);
-      this.activeTile.tile.piece = this.activeTile;
-      let ct = this.activeTile.tile.getCenter();
-      this.activeTile.position = new Vector(ct.x,ct.y);
-      this.activeTile.sliding = false;
-      this.activeTile = undefined;
-      this.nextTile(random(1, 36));
+      if (!remove) this.activeTile.tile.piece = this.activeTile;
+      let pos = this.activeTile.pos;
+      if (remove) {
+        this.activeTile.sliding = false;
+        this.activeTile.slideTo(pos.x - 200, pos.y, 8).then((e) => {
+          this.placedTiles.pop();
+          this.nextTile(random(1, 36));
+        });
+        this.activeTile = undefined;
+      }
+      if(!remove){
+        let ct = this.activeTile.tile.getCenter();
+        this.activeTile.position = new Vector(ct.x, ct.y);
+        this.activeTile.sliding = false;
+        this.activeTile = undefined;
+        this.nextTile(random(1, 36));
+      }
+      // this.nextTile(random(1, 36));
     }
   }
+  load_pat_assets(){
+    let p1 = new Sprite('assets/guy.png',loaded=>{
+      p1.element.width = this.g.scale * .4;
+      p1.element.height = p1.element.width * 1.3737;
+      p1.width = p1.element.width;
+      p1.height = p1.element.height;
+      p1.update();
+    });
+    this.players_and_temples.push(p1);
+  }
+}
+
+Sprite.prototype.goToTile = function(tile,segs=0){
+  let ct = tile.getCenter();
+  this.slideTo(ct.x,ct.y,segs);
 }
 
 Tile.prototype.draw = function (
@@ -178,8 +217,8 @@ Tile.prototype.draw = function (
   ctx.stroke();
 };
 
-Grid.prototype.draw = function () {
+Grid.prototype.draw = function (color = "green") {
   this.forEach((tile) => {
-    tile.draw();
+    tile.draw(color);
   });
 };
