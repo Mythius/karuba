@@ -74,9 +74,9 @@
     </style>
     <script src="helpers.js"></script>
     <script src="grid.js"></script>
-    <script src="karuba.js"></script>
     <script src="input.js"></script>
     <script src="sprite.js"></script>
+    <script src="karuba.js"></script>
   </head>
   <body>
     <main></main>
@@ -100,6 +100,10 @@
         ctx.clearRect(-2, -2, canvas.width + 2, canvas.height + 2);
         current_game.render();
         // current_game.g.getActiveTile()?.draw('blue','rgba(50,50,200,.7)');
+        let at = current_game.g.getActiveTile();
+        if(at){
+          current_game.players_and_temples[0].goToTile(at,5);
+        }
       }
 
       window.onresize = function(){
@@ -127,6 +131,7 @@
           current_game.click();
         }
       });
+
 
       let ox,oy;
       canvas.on('mousedown',e=>{

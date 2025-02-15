@@ -22,6 +22,8 @@ class Game {
     this.placedTiles = [];
     this.tileAssets = [];
     this.loadTrophies(this.trophies);
+    this.players_and_temples = [];
+    this.load_pat_assets();
     this.loadTiles();
   }
   updateHTML() {
@@ -88,6 +90,9 @@ class Game {
         if (!this.activeTile.tile?.piece)
           this.activeTile.tile?.draw("yellow", "rgba(237, 253, 4, 0.38)");
       }
+    }
+    for(let p of this.players_and_temples){
+      p.draw();
     }
   }
   loadTrophies(trophies) {
@@ -180,6 +185,21 @@ class Game {
       // this.nextTile(random(1, 36));
     }
   }
+  load_pat_assets(){
+    let p1 = new Sprite('assets/guy.png',loaded=>{
+      p1.element.width = this.g.scale * .4;
+      p1.element.height = p1.element.width * 1.3737;
+      p1.width = p1.element.width;
+      p1.height = p1.element.height;
+      p1.update();
+    });
+    this.players_and_temples.push(p1);
+  }
+}
+
+Sprite.prototype.goToTile = function(tile,segs=0){
+  let ct = tile.getCenter();
+  this.slideTo(ct.x,ct.y,segs);
 }
 
 Tile.prototype.draw = function (
