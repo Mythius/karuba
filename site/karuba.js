@@ -186,20 +186,62 @@ class Game {
     }
   }
   load_pat_assets(){
-    let p1 = new Sprite('assets/guy.png',loaded=>{
-      p1.element.width = this.g.scale * .4;
-      p1.element.height = p1.element.width * 1.3737;
-      p1.width = p1.element.width;
-      p1.height = p1.element.height;
-      p1.update();
-    });
-    this.players_and_temples.push(p1);
+    for(let color of this.colors){
+      let p1 = new Sprite(`assets/${color}-guy.png`,loaded=>{
+        p1.element.width = this.g.scale * .4;
+        p1.element.height = p1.element.width * 1.3737;
+        p1.width = p1.element.width;
+        p1.height = p1.element.height;
+        p1.update();
+      });
+      let t1 = new Sprite(`assets/${color}-temple.png`,loaded=>{
+        t1.element.width = this.g.scale * .4;
+        t1.element.height = t1.element.width / 1.3534;
+        t1.width = t1.element.width;
+        t1.height = t1.element.height;
+        t1.update();
+      });
+      p1.type = 'player';
+      p1.color = color;
+      t1.type = 'temple';
+      t1.color = color;
+      this.players_and_temples.push(p1);
+      this.players_and_temples.push(t1);
+    }
+  }
+  setPositions(piece_placement){
+    for(let i=0;i<piece_placement.length;i++){
+      this.players_and_temples[i].moveToNumber(piece_placement[i]);
+    }
   }
 }
 
 Sprite.prototype.goToTile = function(tile,segs=0){
   let ct = tile.getCenter();
   this.slideTo(ct.x,ct.y,segs);
+}
+
+Sprite.prototype.moveToNumber = function(n){
+  const g = current_game.g;
+  const offset = this.type == 'player' ? g.scale * .8 : g.scale * .65;
+  if(n < 6){
+    let tile = g.getTileAt(n,0);
+    let ct = tile.getCenter();
+    this.pos = new Vector(ct.x,ct.y - offset)
+  } else if (n < 11){
+    let tile = g.getTileAt(5,n-6);
+    let ct = tile.getCenter();
+    this.pos = new Vector(ct.x + offset,ct.y)
+    this.direction = 90;
+  } else if (n < 16){
+    let tile = g.getTileAt(0,n-11);
+    let ct = tile.getCenter();
+    this.pos = new Vector(ct.x - offset,ct.y)
+  } else {
+    let tile = g.getTileAt(n-16,4);
+    let ct = tile.getCenter();
+    this.pos = new Vector(ct.x,ct.y + offset)
+  }
 }
 
 Tile.prototype.draw = function (

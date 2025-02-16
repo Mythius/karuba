@@ -100,10 +100,6 @@
         ctx.clearRect(-2, -2, canvas.width + 2, canvas.height + 2);
         current_game.render();
         // current_game.g.getActiveTile()?.draw('blue','rgba(50,50,200,.7)');
-        let at = current_game.g.getActiveTile();
-        if(at){
-          current_game.players_and_temples[0].goToTile(at,5);
-        }
       }
 
       window.onresize = function(){
@@ -111,6 +107,10 @@
       }
 
       current_game.resize();
+      current_game.setPositions(
+        [14,3,16,5,21,10,20,9]
+      );
+
 
       loop();
 
