@@ -1,1 +1,152 @@
-<link rel="icon" type="image/x-icon" href="icon.png">
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1000, height=500, user-scalable=0" />
+    <title>Karuba</title>
+    <link rel="icon" type="image/x-icon" href="icon.png" />
+    <style>
+      @media screen and (orientation: landscape) {
+        canvas,
+        img {
+          display: block;
+          overflow-y: hidden;
+          /* flex: 1; */
+        }
+        game {
+          position: fixed;
+          left: 0;
+          top: 0;
+          width: 100%;
+          height: 100%;
+          display: flex;
+        }
+        #trophies {
+          background-color: white;
+          height: 100%;
+          width: 13%;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          gap: 5px;
+        }
+        #players {
+          height: 100%;
+          flex: 1;
+        }
+        #trophies > img {
+          width: 60%;
+        }
+        #players {
+          display: grid;
+        }
+        .player {
+          width: 100%;
+          font-size: 20px;
+          color: black;
+          border: 5px solid gray;
+          font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+            Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue",
+            sans-serif;
+          margin: 3px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: bold;
+        }
+      }
+      #rotatemessage{
+        background-color: black;
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #rotatemessage img {
+        width: 100px;
+      }
+    </style>
+    <script src="helpers.js"></script>
+    <script src="grid.js"></script>
+    <script src="input.js"></script>
+    <script src="sprite.js"></script>
+    <script src="karuba.js"></script>
+  </head>
+  <body>
+    <main></main>
+    <div id="rotatemessage">
+        <img width="300" src="assets/rotatephone.gif" alt="">
+    </div>
+    <game>
+      <canvas></canvas>
+      <div id="players">
+      </div>
+    </game>
+    <script>
+      const canvas = obj("canvas");
+      const ctx = canvas.getContext("2d");
+      let current_game = new Game(['Matthias','Lauren','Seth','Nathan','Wendy','Adalyn','Emma','Zack']);
+
+      mouse.start(canvas);
+
+      function loop() {
+        setTimeout(loop, 1000 / 30);
+        ctx.clearRect(-2, -2, canvas.width + 2, canvas.height + 2);
+        current_game.render();
+        // current_game.g.getActiveTile()?.draw('blue','rgba(50,50,200,.7)');
+        // current_game.g.getActiveTile()?.drawAsOption();
+      }
+
+      window.onresize = function(){
+        current_game.resize();
+      }
+
+      current_game.resize();
+      current_game.setPositions(
+        [14,3,16,5,21,10,20,9]
+      );
+
+
+      loop();
+
+      current_game.updateHTML();
+
+      Touch.init(data=>{
+        if(data.type == 'scroll'){
+          mouse.down = true;
+          mouse.pos.x = data.x;
+          mouse.pos.y = data.y;
+        }
+        if(data.type == 'end'){
+          mouse.down = false;
+        }
+        if(data.type == 'click'){
+          // mouse.pos.x = data.x;
+          // mouse.pos.y = data.y;
+          current_game.click();
+        }
+      });
+
+
+      let ox,oy;
+      canvas.on('mousedown',e=>{
+        ox = e.pageX;
+        oy = e.pageY;
+      })
+      canvas.on('mouseup',e=>{
+        if(ox == e.pageX || oy == e.pageY){
+          current_game.click();
+        }
+      })
+
+      current_game.nextTile(random(1,36));
+
+    </script>
+  </body>
+</html>
