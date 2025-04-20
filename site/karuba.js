@@ -19,6 +19,7 @@ class Game {
     this.g.offsetY = 123;
     this.playergrid = new Grid(1, 5, 123);
     this.activeTile;
+    this.displayMove = false;
     this.placedTiles = [];
     this.tileAssets = [];
     this.loadTrophies(this.trophies);
@@ -42,6 +43,8 @@ class Game {
   render() {
     ctx.drawImage(this.bg, 0, 0, this.BOARD_WIDTH, this.BOARD_HEIGHT);
     let size = canvas.height / 5;
+
+    // DRAWS AWARDS
     for (let i = 0; i < 4; i++) {
       let piece = this.colors[i] + this.trophy[this.colors[i]];
       let asset = this.trophies[piece];
@@ -54,6 +57,8 @@ class Game {
         asset.height * ratio
       );
     }
+
+    // DRAW BACKGROUND
     size -= 20;
     ctx.drawImage(
       this.cardback,
@@ -62,10 +67,14 @@ class Game {
       size,
       size
     );
+
+    // DRAW PLACED TILES AND GRID
     for (let tile of this.placedTiles) {
       tile.draw();
     }
     this.g.draw();
+
+    // Draw Next Piece (in corner)
     // this.playergrid.draw("blue");
     if (this.activeTile && !this.activeTile.ix && !this.activeTile.onmouse) {
       this.activeTile.position = new Vector(
@@ -73,24 +82,37 @@ class Game {
         this.BOARD_HEIGHT - this.activeTile.w / 2 - 10
       );
     }
+
     if (this.activeTile && mouse.down) {
-      this.activeTile.onmouse = true;
+      this.activeTile.onmouse = true; // SET DRAGGING TO TRUE
     }
-    if (mouse.down && this.activeTile?.onmouse) {
-      this.activeTile.slideTo(mouse.pos.x, mouse.pos.y, 4);
+
+
+    if (mouse.down && this.activeTile?.onmouse) { // IF DRAGGING PIECE
       let at = this.g.getActiveTile();
-      if (!at) at = this.playergrid.getActiveTile();
-      if (at) this.activeTile.tile = at;
+      if(!at){
+        this.activeTile.slideTo(mouse.pos.x, mouse.pos.y, 4);
+      } else if(!at.isMovementOption){
+        this.activeTile.slideTo(mouse.pos.x, mouse.pos.y, 4);
+        if (!at) at = this.playergrid.getActiveTile();
+        if (at) this.activeTile.tile = at;
+      }
     }
+
+
+    // IF NOT DRAGGING PIECE, SNAP TO GRID
     if (this.activeTile?.onmouse && !mouse.down) {
       if (this.activeTile.tile) {
         let ct = this.activeTile.tile.getCenter();
         this.activeTile.slideTo(ct.x, ct.y, 2);
       }
     }
+
+    // DRAW HIGHLIGHTS, YELLOW, RED, AND MOVEMENT OPTIONS
     if (this.activeTile) {
       this.activeTile.draw();
       if (!mouse.down) {
+        this.g.clearMovementOptions();
         if (this.activeTile.tile?.piece)
           this.activeTile.tile?.draw("red", "rgba(253, 4, 4, 0.38)");
         if (!this.activeTile.tile?.piece)
@@ -111,9 +133,28 @@ class Game {
         }
       }
     }
+
+    // DRAWS PLAYERS AND TEMPLES
     for (let p of this.players_and_temples) {
       p.draw();
     }
+
+
+    let clickedTile = this.g.getActiveTile();
+    if(clickedTile && clickedTile.isMovementOption){
+      if(this.activeTile && this.activeTile.tile.grid == this.playergrid){
+          let n = this.activeTile.tile.y;
+          let player = this.players_and_temples[n * 2];
+          if (player) {
+            player.goToTile(this.activeTile).then(e=>{
+
+            });
+          }
+      }
+    }
+
+
+
   }
   loadTrophies(trophies) {
     for (let c of this.colors) {
@@ -306,7 +347,15 @@ Tile.prototype.drawAsOption = function () {
   ctx.fillStyle = "rgba(255,255,0,.7)";
   ctx.arc(c.x, c.y, this.grid.scale * 0.2, 0, Math.PI * 2);
   ctx.fill();
+  this.isMovementOption = true;
 };
+
+Grid.prototype.clearMovementOptions = function() { 
+  this.forEach(tile=>{
+    tile.isMovementOption = false;
+  })
+}
+
 
 Tile.prototype.getConnectedNeighbors = function () {
   if (!this.piece) return [];
